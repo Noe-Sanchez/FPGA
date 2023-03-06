@@ -1,0 +1,25 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+
+ENTITY FA_1 IS
+	PORT(
+		a, b, cin : IN 	STD_LOGIC;
+		s, cout 	: OUT STD_LOGIC);
+END ENTITY;
+
+ARCHITECTURE behavior OF FA_1 IS
+BEGIN
+	process(a, b, cin) begin
+		if a='1' xor b='1' xor cin='1' then
+			s <= '1';
+		else
+			s <= '0';
+		end if;
+
+		if (a='1' and (b='1' or cin='1')) or (b='1' and cin='1') then
+			cout <= '1';
+		else
+			cout <= '0';
+		end if;
+	end process;
+END ARCHITECTURE;

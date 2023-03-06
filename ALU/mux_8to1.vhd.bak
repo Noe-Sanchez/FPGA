@@ -1,0 +1,22 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+
+ENTITY mux_8to1 IS
+	PORT(
+		x 					: IN 	STD_LOGIC_VECTOR(7 DOWNTO 0);
+		sel 				: IN 	STD_LOGIC_VECTOR(2 DOWNTO 0);
+		y 					: OUT	STD_LOGIC);
+END ENTITY;
+
+ARCHITECTURE behavior OF mux_8to1 IS
+BEGIN
+	with sel select
+		y <= 	x(7) WHEN "111",
+				x(6) WHEN "110",
+				x(5) WHEN "101",
+				x(4) WHEN "100",
+				x(3) WHEN "011",
+				x(2) WHEN "010",
+				x(1) WHEN "001",
+				x(0) WHEN others;
+END ARCHITECTURE;

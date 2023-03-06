@@ -1,0 +1,38 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+
+ENTITY ALU IS
+	PORT(
+		a, b 		: IN	STD_LOGIC_VECTOR(1 DOWNTO 0);
+		sel 		: IN 	STD_LOGIC_VECTOR(2 DOWNTO 0);
+		final_s 	: OUT 	STD_LOGIC_VECTOR(1 DOWNTO 0);
+		cout 		: OUT STD_LOGIC);
+END ENTITY;
+
+ARCHITECTURE behavior OF ALU IS
+	COMPONENT FA_2 IS
+		PORT(
+			a, b 		: IN	STD_LOGIC_VECTOR(1 DOWNTO 0);
+			cin 		: IN 	STD_LOGIC;
+			s 			: OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+			cout		: OUT	STD_LOGIC);
+	END COMPONENT;
+
+	COMPONENT mux_8to1 IS
+		PORT(
+			x7, x6, x5, x4, x3, x2, x1, x0	: IN 	STD_LOGIC;
+			sel 							: IN 	STD_LOGIC_VECTOR(2 DOWNTO 0);
+			y 								: OUT	STD_LOGIC);
+	END COMPONENT;
+
+	signal s_cin	: std_logic:= '0'; 					-- mid-output
+	signal s_a								: std_logic_vector(1 DOWNTO 0):= "00"; -- output
+	signal s_b								: std_logic_vector(1 DOWNTO 0):= "00"; -- output
+BEGIN
+	mux_a1	:	mux_8to1	PORT MAP (a(1), a(1), a(1), '0',  (a(1) and b(1)),  (a(1) or b(1)),  (a(1) xor b(1)), (not a(1)), sel, s_a(1));
+	mux_a0	:	mux_8to1	PORT MAP (a(0), a(0), a(0), '0',  (a(0) and b(0)),  (a(0) or b(0)),  (a(0) xor b(0)), (not a(0)), sel, s_a(0));
+	mux_b1	:	mux_8to1	PORT MAP (b(1), (not b(1)), '0', '0', '0', '0', '0', '0', sel, s_b(1));
+	mux_b0	:	mux_8to1	PORT MAP (b(0), (not b(0)), '0', '0', '0', '0', '0', '0', sel, s_b(0));
+	mux_cin	:	mux_8to1	PORT MAP ('0', '1', '1', '0', '0', '0', '0', '0', sel, s_cin);
+	sum		:	FA_2		PORT MAP (s_a, s_b, s_cin, final_s, cout);
+END ARCHITECTURE;

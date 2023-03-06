@@ -1,0 +1,22 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.all;
+
+ENTITY carry_ripple_4bit_adder IS
+	PORT( 
+	//pendiente
+	);
+END carry_ripple_4bit_adder;
+
+ARCHITECTURE Behavior OF carry_ripple_4bit_adder IS
+
+COMPONENT FullAdder IS
+	PORT( a, b, ci: 	IN		std_logic;
+			s, co:		OUT	std_logic
+	);
+END COMPONENT;
+
+BEGIN
+	PROCESS(a, b, ci) BEGIN
+	
+	END PROCESS;
+END Behavior;
