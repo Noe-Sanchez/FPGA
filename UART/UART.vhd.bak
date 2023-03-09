@@ -18,13 +18,11 @@ architecture Behavior of UART is
    constant S_IDLE : std_logic_vector(1 downto 0) := "00";
    constant S_BUSY : std_logic_vector(1 downto 0) := "01";
    constant S_STOP : std_logic_vector(1 downto 0) := "10";
-   signal d_in_tmp : std_logic_vector(7 downto 0);
-   signal edit_enabled : std_logic:='1';
+   signal d_in_tmp : std_logic_vector(7 downto 0) := d_in;
 begin
    
    process(clk) is
       variable counter : integer range 0 to 434 := 0;
-      variable edit_enabled_counter : integer range 0 to 25000000 := 0;
    begin
       if rising_edge(clk) then
          counter := counter + 1;
@@ -33,16 +31,6 @@ begin
             counter := 0;
          else
             s_tick <= '0';
-         end if;
-
-         if tx_done_tick = '1' then
-            edit_enabled <= '0';
-         end if;
-
-         edit_enabled_counter := edit_enabled_counter + 1;
-         if edit_enabled_counter = 24999999 then
-            edit_enabled <= '1';
-            edit_enabled_counter := 0;
          end if;
       end if;
    end process;
@@ -54,7 +42,7 @@ begin
          case(state) is
             --IDLE
             when S_IDLE =>
-               if tx_start= '0' and edit_enabled = '1' then
+               if tx_start= '0' then
                   tx_done_tick <= '0';
                   tx <= '0';
                   state <= S_BUSY;
@@ -66,14 +54,13 @@ begin
 
             --BUSY
             when S_BUSY =>
-               tx <= d_in_tmp(0);
-               d_in_tmp <= '0' & d_in_tmp(7 downto 1);
+               tx <= d_in_tmp(7);
+               d_in_tmp <= d_in(6 downto 0) & '0';
                
                counter := counter + 1;
                if counter = 8 then
                   state <= S_STOP;
                   counter := 0;
-                  tx_done_tick <= '1';
                end if;
 
             --STOP
@@ -81,7 +68,7 @@ begin
                tx <= '1';
                counter := 0;
                state <= S_IDLE;
-               tx_done_tick <= '0';
+               tx_done_tick <= '1';
 
             when others =>
                state <= S_IDLE; 
@@ -91,3 +78,4 @@ begin
 
 
 end Behavior;
+
