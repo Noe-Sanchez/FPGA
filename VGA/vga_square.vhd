@@ -19,8 +19,8 @@ ENTITY vga_square IS
 		Hc_div2: INTEGER := 320; 
 		Vc_div2: INTEGER := 240; 
 
-		dx: INTEGER := 60;
-		dy: INTEGER := 60; 
+		dx: INTEGER := 5;
+		dy: INTEGER := 5; 
 
 		x: INTEGER := 320; 
 		y: INTEGER := 240; 
@@ -32,9 +32,7 @@ ENTITY vga_square IS
 		h_div4: INTEGER := 10); 
 	PORT (
 		clk: IN STD_LOGIC; --50MHz in our board
-		red_switch, green_switch, blue_switch, s_en, up_sw, down_sw, right_sw, left_sw: IN STD_LOGIC;
-		x_origin : out integer range 0 to 640:= x;
-		y_origin : out integer range 0 to 480:= y;
+		l_sw, u_sw, d_sw, r_sw : IN STD_LOGIC;
 		pixel_clk: BUFFER STD_LOGIC;
 		Hsync, Vsync: BUFFER STD_LOGIC;
 		R, G, B: OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
@@ -42,17 +40,9 @@ ENTITY vga_square IS
 	END vga_square;
 
 ARCHITECTURE vga_square OF vga_square IS
-
-SIGNAL Hactive, Vactive, dena: STD_LOGIC;
-SIGNAL do_up, do_down: STD_LOGIC := '0';
---SIGNAL x_origin : integer RANGE 30 TO 610 := x;
---SIGNAL y_origin : integer RANGE 30 TO 450 := y;
-
-SIGNAL up_e : std_logic := '0';
-
-SIGNAL s : std_logic_vector(3 downto 0);
-SIGNAL count : integer RANGE 0 TO 10;
-
+	SIGNAL Hactive, Vactive, dena: STD_LOGIC;
+	SIGNAL x_origin :  	integer:= x;
+	SIGNAL y_origin : 	integer:= y;
 BEGIN
 -------------------------------------------------------
 --Part 1: CONTROL GENERATOR
@@ -63,7 +53,7 @@ BEGIN
 	--Create pixel clock (50MHz->25MHz):
 	PROCESS (clk)
 	BEGIN
-		IF (clk'EVENT AND clk='1') THEN 
+		IF rising_edge(clk) THEN 
 			pixel_clk <= NOT pixel_clk;
 		END IF;
 	END PROCESS;
@@ -121,178 +111,68 @@ BEGIN
 			IF(col_counter> (x_origin - w_div2) and col_counter< (x_origin + w_div2) and line_counter> (y_origin - h_div2) and line_counter< (y_origin + h_div2)) THEN
 				IF(col_counter> (x_origin - w_div4) and col_counter< (x_origin + w_div4) and line_counter> (y_origin - h_div4) and line_counter< (y_origin + h_div4)) THEN
 					R <= (OTHERS => '1');
-					G <= (OTHERS => '1');
-					B <= (OTHERS => '1');
+					G <= (OTHERS => '0');
+					B <= (OTHERS => '0');
 					
 				ELSE
-					R <= (OTHERS => '0');
-					G <= (OTHERS => '0');
+					R <= (OTHERS => '1');
+					G <= (OTHERS => '1');
 					B <= (OTHERS => '1');
 				END IF;
 			ELSE
-				R <= (OTHERS => '1');
-				G <= (OTHERS => '1');
-				B <= (OTHERS => '1');
-			END IF;
-		ELSE
+				R <= (OTHERS => '0');
+				G <= (OTHERS => '0');
+				B <= (OTHERS => '0');
+				END IF;
+				ELSE
 			R <= (OTHERS => '0');
 			G <= (OTHERS => '0');
 			B <= (OTHERS => '0');
 		END IF;
-
-	END PROCESS;
-	/*
-	--switch logic
-	PROCESS(up_sw)
-	BEGIN
-		IF rising_edge(up_sw) THEN
-			IF (y_origin + dy) > 480-30 THEN
-				y_origin <= 480-31;
-			ELSE
-				y_origin <= y_origin + dy;
-			END IF;
-		END IF;
 	END PROCESS;
 
-	PROCESS(down_sw)
+	PROCESS(clk)
+		variable x_tmp : integer := x_origin;
+		variable y_tmp : integer := y_origin;
+		variable counter : integer range 0 to 999999999 := 0;
+		variable s_en : std_logic := '0';
 	BEGIN
-		IF rising_edge(down_sw) THEN
-			IF (y_origin - dy) < 30 THEN
-				y_origin <= 31;
-			ELSE
-				y_origin <= y_origin - dy;
-			END IF;
-		END IF;
-	END PROCESS;
-	*/
-
-	/*
-
-	PROCESS(up_sw)
-	BEGIN
-		IF rising_edge(up_sw) THEN
-			IF (y_origin + dy) > 480-30 THEN
-				do_up <0
-			ELSE
-				y_origin <= y_origin + dy;
-			END IF;
-		END IF;
-	END PROCESS;
-
-	PROCESS(down_sw)
-	BEGIN
-		IF rising_edge(down_sw) THEN
-			IF (y_origin - dy) < 30 THEN
-				y_origin <= 31;
-			ELSE
-				y_origin <= y_origin - dy;
-			END IF;
-		END IF;
-	END PROCESS;
-
-
-	PROCESS(do_up, do_down)
-	BEGIN
-		IF rising_edge(down_sw) THEN
-			IF (y_origin - dy) < 30 THEN
-				y_origin <= 31;
-			ELSE
-				y_origin <= y_origin - dy;
-			END IF;
-		END IF;
-	END PROCESS;
-	*/
-
-
-
-	/*
-	PROCESS(pixel_clk)
-		VARIABLE counter : integer range 0 to 1000 := 0;
-	BEGIN
-		
-		IF counter < 975 THEN
+		IF rising_edge(clk) then
 			counter := counter + 1;
-		else
-		IF up_sw'EVENT AND up_sw = '1' THEN
-		y_origin <= y_origin + dy;
-		--counter := 0;
+			if counter = 999999 then
+				counter := 0;
+				x_tmp := x_origin;
+				y_tmp := y_origin;
+				
+				IF u_sw = '1' THEN
+					y_tmp := y_tmp - dy;
+				END IF;
+				IF d_sw = '1' THEN
+					y_tmp := y_tmp + dy;
+				END IF;
+
+				IF l_sw = '1' THEN
+					x_tmp := x_tmp - dx;
+				END IF;
+
+				IF r_sw = '1' THEN
+					x_tmp := x_tmp + dx;
+				END IF;
+
+				IF x_tmp < 31 THEN
+					x_tmp := 30;
+				ELSIF x_tmp > 608 then
+					x_tmp := 609;
+				END IF;
+				IF y_tmp < 32 THEN
+					y_tmp := 31;
+				ELSIF y_tmp > 449 then
+					y_tmp := 450;
+				END IF;
 			END IF;
-		END IF;
-	END PROCESS;*/
-
-/*
-PROCESS(down_sw)
-BEGIN
-IF rising_edge(down_sw) THEN
-y_origin <= y_origin;
-END IF;
-END PROCESS;
-
-PROCESS(left_sw)
-BEGIN
-IF rising_edge(left_sw) THEN
-x_origin <= x_origin;
-END IF;
-END PROCESS;
-
-PROCESS(right_sw)
-BEGIN
-IF rising_edge(right_sw) THEN
-x_origin <= x_origin;
-END IF;
-END PROCESS;*/
-
-PROCESS(s_en)
-variable x_tmp : integer := x_origin;
-variable y_tmp : integer := y_origin;
---variable up_e : std_logic := '0';
-variable up_e_tmp : std_logic := '0';
-variable s : std_logic_vector(3 downto 0) := "0000";
-BEGIN		
-	x_tmp := x_origin;
-	y_tmp := y_origin;
-	up_e_tmp := up_e;
-	s(3) := left_sw; s(2) := up_sw; s(1) := down_sw; s(0) := right_sw;
-
-	IF up_e = '1' and s_en = '0' THEN
-		IF left_sw = '1' and right_sw = '1' and up_sw = '1' and down_sw = '1' THEN
-			x_tmp := x; y_tmp := y; up_e_tmp := '0';
-		ELSE
-			IF up_sw = '1' THEN
-				y_tmp := y_tmp - dy; up_e_tmp := '0';
-			END IF;
-			IF down_sw = '1' THEN
-				y_tmp := y_tmp + dy; up_e_tmp := '0';
-			END IF;
-			IF left_sw = '1' THEN
-				x_tmp := x_tmp - dx; up_e_tmp := '0';
-			END IF;
-			IF right_sw = '1' THEN
-				x_tmp := x_tmp + dx; up_e_tmp := '0';
-			END IF;
-		END IF;
-	END IF;
-
-	IF s_en = '1' THEN
-		up_e_tmp := '1';
-	END IF;
-	
-	IF x_tmp < 1 THEN
-		x_tmp := 639;
-	ELSIF x_tmp > 639 then
-		x_tmp := 1;
-	END IF;
-	IF y_tmp < 1 THEN
-		y_tmp := 479;
-	ELSIF y_tmp > 479 then
-		y_tmp := 1;
-	END IF;
-
-	x_origin <= x_tmp;
-	y_origin <= y_tmp;
-	up_e <= up_e_tmp;
-		
-END PROCESS;
-
-
+			
+			x_origin <= x_tmp;
+			y_origin <= y_tmp;
+		end if;
+	END PROCESS;
 END vga_square;
