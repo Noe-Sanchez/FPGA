@@ -1,0 +1,26 @@
+[*]
+[*] GTKWave Analyzer v3.3.114 (w)1999-2023 BSI
+[*] Fri Mar 10 18:09:18 2023
+[*]
+[dumpfile] "/home/danfo/vhdl_proys/FPGA/Reto/tb_reto.vcd"
+[dumpfile_mtime] "Fri Mar 10 16:04:35 2023"
+[dumpfile_size] 1990611
+[savefile] "/home/danfo/vhdl_proys/FPGA/Reto/ws.gtkw"
+[timestart] 0
+[size] 1280 697
+[pos] -1 -1
+*-37.777386 250000000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 214
+[signals_width] 165
+[sst_expanded] 1
+[sst_vpaned_height] 186
+@28
+tb_reto.dut.edit_enabled
+tb_reto.tb_clk
+tb_reto.tb_start
+tb_reto.tb_start_flag
+tb_reto.tb_done_tick
+tb_reto.tb_tx
+tb_reto.dut.s_tick
+[pattern_trace] 1
+[pattern_trace] 0
